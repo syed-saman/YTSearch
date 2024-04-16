@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Search</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to external CSS file -->
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Search</h1>
+        <input type="text" id="searchQuery" placeholder="Enter search keyword">
+        <button onclick="searchVideos()">Search</button>
+        <p id="resultCount"></p> <!-- Paragraph to display result count -->
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        function searchVideos() {
+            var searchQuery = document.getElementById("searchQuery").value.trim();
+            if (searchQuery === "") {
+                alert("Please enter a search keyword");
+                return;
+            }
+
+            // Make API request to backend
+            fetch(`http://localhost:5000/search?query=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Log response data to console for inspection
+                    displayResults(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function displayResults(results) {
+            var resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = "<p>No results found</p>";
+                document.getElementById("resultCount").textContent = "Total Results: 0";
+                return;
+            }
+
+            // Display result count
+            document.getElementById("resultCount").textContent = "Total Results: " + results.length;
+
+            results.forEach(result => {
+                var videoDiv = document.createElement("div");
+                videoDiv.classList.add("video");
+
+                var thumbnail = document.createElement("img");
+                thumbnail.src = `https://img.youtube.com/vi/${result.videoId}/default.jpg`; // YouTube thumbnail URL
+                thumbnail.alt = "Thumbnail";
+
+                var title = document.createElement("h2");
+                title.textContent = result.title;
+
+                var viewCount = document.createElement("p");
+                viewCount.textContent = "Views: " + result.viewCount; // Display view count
+
+                var videoId = document.createElement("p");
+                videoId.textContent = "Video ID: " + result.videoId;
+
+                var videoLink = document.createElement("a");
+                videoLink.href = "https://www.youtube.com/watch?v=" + result.videoId;
+                videoLink.textContent = "Watch Video";
+
+                videoDiv.appendChild(thumbnail);
+                videoDiv.appendChild(title);
+                videoDiv.appendChild(viewCount);
+                videoDiv.appendChild(videoId);
+                videoDiv.appendChild(videoLink);
+                resultsDiv.appendChild(videoDiv);
+            });
+        }
+    </script>
+</body>
+</html>
